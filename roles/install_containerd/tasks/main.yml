@@ -1,0 +1,32 @@
+---
+# tasks file for install_containerd
+- name: Verify the install_containerd role
+  ansible.builtin.debug:
+    msg: "This is install_containerd role"
+
+- name: Copy containerd.conf to /etc/modules-load.d
+  ansible.builtin.copy:
+    src: containerd.conf
+    dest: /etc/modules-load.d/containerd.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: modprobe overlay and br_filter kernel modules
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - overlay
+    - br_netfilter
+
+- name: Copy 99-kubernetes-cri.conf to /etc/sysctl.d
+  ansible.builtin.copy:
+    src: 99-kubernetes-cri.conf
+    dest: /etc/sysctl.d/99-kubernetes-cri.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload sysctl 
+  shell: sysctl --system

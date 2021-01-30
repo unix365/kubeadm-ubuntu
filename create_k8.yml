@@ -1,0 +1,23 @@
+---
+- hosts: all
+  become: true
+  vars: 
+    install: true
+
+  roles:
+    - { role: install_containerd, when: ansible_os_family == 'Debian' }
+
+#   handlers:
+#     - name: Enable httpd
+#       service: name=httpd state=started
+#       listen: "start_enable_httpd"
+#     - name: Allow http and https firewall access
+#       firewalld:
+#         service: '{{ item }}'
+#         state: enabled
+#         permanent: True
+#         immediate: True
+#         with_items:
+#         - http
+#         - https
+#         listen: add_http_https_firewall
