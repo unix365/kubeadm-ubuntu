@@ -1,0 +1,44 @@
+---
+# tasks file for roles/install_kubeadm
+- name: Install containerd
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+     - apt-transport-https
+     - curl
+
+- name: Download and install kube packages key
+  shell: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
+- name: Copy kubernetes.list to /etc/apt/sources.list.d/kubernetes.list
+  ansible.builtin.copy:
+    src: kubernetes.list
+    dest: /etc/apt/sources.list.d/kubernetes.list
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Run apt-get update
+  apt:
+    update_cache: yes
+
+- name: Install kubelet, kubeadm, kubectl 1.20
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+     - kubelet=1.20.1-00
+     - kubeadm=1.20.1-00
+     - kubectl=1.20.1-00
+
+- name: Hold kubernetes package versions to current version
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+

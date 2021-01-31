@@ -1,0 +1,34 @@
+---
+
+- name: Check if apiserver has already been installed
+  ansible.builtin.stat:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+  register: kube_apiserver
+
+- name: Initialising Kubernetes Cluster
+  command: echo kubeadm init --pod-network-cidr "{{ pod_network_cidr }}"
+  run_once: true
+  when: kube_apiserver.stat.isreg == False
+
+- name: Check I am root
+  shell: id
+  register: id
+
+- name: Verify we are root
+  ansible.builtin.debug:
+    msg: "I am {{ id }}"
+
+- name: Create kube config file for root
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    mode: '0755'
+
+- name: Copy kube config file to root user
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    remote_src: yes
+    owner: root
+    group: root
+    mode: '0644'

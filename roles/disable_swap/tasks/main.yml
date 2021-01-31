@@ -1,0 +1,10 @@
+---
+# tasks file for roles/disable_swap
+- name: Disable swap
+  shell: swapoff -a
+
+- name: Remove swap from /etc/fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
