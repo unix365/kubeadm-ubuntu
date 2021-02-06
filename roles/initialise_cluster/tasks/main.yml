@@ -4,25 +4,19 @@
   ansible.builtin.stat:
     path: /etc/kubernetes/manifests/kube-apiserver.yaml
   register: kube_apiserver
+  when: ansible_nodename == "ab7b7f44401c.mylabserver.com"
 
 - name: Initialising Kubernetes Cluster
   command: echo kubeadm init --pod-network-cidr "{{ pod_network_cidr }}"
   run_once: true
-  when: kube_apiserver.stat.isreg == False
-
-- name: Check I am root
-  shell: id
-  register: id
-
-- name: Verify we are root
-  ansible.builtin.debug:
-    msg: "I am {{ id }}"
+  when: kube_apiserver.stat.isreg == False and ansible_nodename == "ab7b7f44401c.mylabserver.com"
 
 - name: Create kube config file for root
   ansible.builtin.file:
     path: /root/.kube
     state: directory
     mode: '0755'
+  when: ansible_nodename == "ab7b7f44401c.mylabserver.com"
 
 - name: Copy kube config file to root user
   copy:
@@ -32,3 +26,18 @@
     owner: root
     group: root
     mode: '0644'
+  when: ansible_nodename == "ab7b7f44401c.mylabserver.com"
+
+- name: Check cluster has been initialised
+  command: kubectl get nodes
+  register: get_cluster_nodes
+  when: ansible_nodename == "ab7b7f44401c.mylabserver.com"
+
+- name: Abort if cluster not initialised
+  assert:
+    that: 
+      - "'v1.20.1' in get_cluster_nodes.stdout"
+    success_msg: "Cluster is successfully initialised"
+    fail_msg: "FAILED: Cluster is not initialised - get_cluster_modes.stdout "
+#  when: ansible_nodename == "ab7b7f44401c.mylabserver.com"
+  when: kube_type == "master"

@@ -1,0 +1,10 @@
+---
+# tasks file for roles/install_kube_network
+- name: apply the network config from the downloaded calico file
+  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  register: network_status
+  when: kube_type == "master"
+
+- name: output the network creation stdout
+  debug: msg="{{ network_status.stdout }}"
+  when: kube_type == "master"

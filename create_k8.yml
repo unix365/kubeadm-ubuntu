@@ -8,11 +8,13 @@
     - { role: install_containerd, when: ansible_os_family == 'Debian' }
     - { role: disable_swap, when: ansible_os_family == 'Debian' }
     - { role: install_kubeadm, when: ansible_os_family == 'Debian' }
-
-- hosts: master-1
-  become: true
-  roles:
     - { role: initialise_cluster, when: ansible_os_family == 'Debian' }
+    - { role: install_kube_network, when: ansible_os_family == 'Debian' }
+
+# - hosts: master-1
+#  become: true
+#  roles:
+#    - { role: initialise_cluster, when: ansible_os_family == 'Debian' }
 
 #   handlers:
 #     - name: Enable httpd
